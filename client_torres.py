@@ -1,5 +1,6 @@
 import socket
 import threading
+#comentario
 
 HOST = '127.0.0.1' # en este caso se tetea laip a mano
 PORT = 12345 #puerto se puede usar del 0 al 65535 evitar los 0-1023
