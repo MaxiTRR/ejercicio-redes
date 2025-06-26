@@ -1,6 +1,5 @@
 import socket
 import threading
-#comentario
 
 HOST = '127.0.0.1'
 PORT = 12345
