@@ -11,6 +11,7 @@ server.listen() #Se pone al servidor en modo escucha
 
 clients = [] #Aca se almacenan cada objeto de socket de los clientes que se conecten
 usuarios = [] #Aca se almacenan los nombres de los usuarios que se conecte (o sea, de los clientes)
+menu = "Ingrese algunas de las opciones:\n 1-Login\n 2-Send\n 3-sendall\n 4-show\n 5-exit"
 
 #Funcion que envia cada mensaje a todos los clientes (usuarios conectados). Recorre la lista de clients y les envia un mensaje a cada uno.
 def broadcast(message):
@@ -24,41 +25,57 @@ def broadcast(message):
 def handle_client(client):
     while True:
         try:
-            # Recibir mensaje del cliente y retransmitirlo
             msg = client.recv(1024)
             msg_decoded = msg.decode('utf-8').strip()
+
             if msg_decoded == '1':
                 response = 'Eligio Login'
-                client.send(response.encode('utf-8'))
+                client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
             elif msg_decoded == '2':
                 response = 'Eligio Send'
-                client.send(response.encode('utf-8'))
+                client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
             elif msg_decoded == '3':
                 response = 'Eligio Sendall'
-                client.send(response.encode('utf-8'))
+                client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
             elif msg_decoded == '4':
                 response = 'Eligio Show'
-                client.send(response.encode('utf-8'))
+                client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
             elif msg_decoded == '5':
                 response = 'Eligio Exit'
-                client.send(response.encode('utf-8'))
-                index = clients.index(client) #Obtinee el indice del objeto socket del cliente guarado ene sta lista para poder encontrarlo luego en la lista de usuarios (que guarda los nicknames)
+                client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
+                
+                # Lógica para desconectar al cliente y notificar a los demás
+                index = clients.index(client)
                 clients.remove(client)
                 client.close()
                 usuario = usuarios[index]
                 broadcast(f"{usuario} abandonó el chat.".encode('utf-8'))
                 usuarios.remove(usuario)
                 break
-            
-            broadcast(msg_decoded)
-        except:
-            # Si hay error, eliminar al cliente
-            index = clients.index(client) #Obtinee el indice del objeto socket del cliente guarado ene sta lista para poder encontrarlo luego en la lista de usuarios (que guarda los nicknames)
-            clients.remove(client)
-            client.close()
-            usuario = usuarios[index]
-            broadcast(f"{usuario} abandonó el chat.".encode('utf-8'))
-            usuarios.remove(usuario)
+            else:
+                # Si el mensaje no es una opción de menú, se trata como un mensaje de chat normal
+                # y se hace broadcast a todos los demás clientes (incluyendo el nombre del remitente)
+                # Asegúrate de que el índice sea válido para obtener el nombre de usuario
+                try:
+                    sender_username = usuarios[clients.index(client)]
+                    broadcast(f"{sender_username}: {msg_decoded}".encode('utf-8'))
+                except ValueError: # En caso de que el cliente ya no esté en la lista (raro pero posible en ciertas condiciones de carrera)
+                    print(f"Advertencia: No se pudo encontrar el usuario para el cliente {client.getpeername()}")
+                    # Podrías optar por no hacer broadcast o manejarlo de otra forma
+
+        except Exception as e:
+            # Manejo de errores y desconexión del cliente
+            print(f"Error handling client: {e}")
+            try:
+                index = clients.index(client)
+                clients.remove(client)
+                client.close()
+                usuario = usuarios[index]
+                broadcast(f"{usuario} abandonó el chat.".encode('utf-8'))
+                usuarios.remove(usuario)
+            except ValueError:
+                # Cliente ya no está en la lista, quizás ya se manejó la desconexión
+                pass
             break
 
 # Función para aceptar conexiones
@@ -76,7 +93,7 @@ def receive():
         print(f"Usuario: {usuario}")
         broadcast(f"{usuario} se unió al chat!".encode('utf-8')) #Le envia un mensaje a todos los clinetes
         client.send("Conectado al servidor.".encode('utf-8')) #Aca, se lo envia al cliente particular que inicio esta conexion
-        client.send("Ingrese algunas de las opciones:\n 1-Login\n 2-Send\n 3-sendall\n 4-show\n 5-exit".encode('utf-8'))
+        client.send(menu.encode('utf-8'))
         
         # Iniciar un hilo para manejar al cliente
         thread = threading.Thread(target=handle_client, args=(client,))
