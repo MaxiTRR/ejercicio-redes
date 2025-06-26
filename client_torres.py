@@ -25,9 +25,9 @@ def receive():
                 client.close()
                 break 
             
-            if message.startswith("Usuario: "):
-                if not connected_and_named:
-                    print("Servidor solicitando usuario, por favor ingresa tu nickname.")
+            #if message.startswith("Usuario: "):
+            #    if not connected_and_named:
+            #        print("Servidor solicitando usuario, por favor ingresa tu nickname.")
             elif message == "Conectado al servidor.":
                 print(message)
                 connected_and_named = True
@@ -55,13 +55,9 @@ def receive():
 # Función para enviar mensajes al servidor
 def send():
     global usuario, should_run
-
-    usuario = input("Ingresa tu nickname: ")
-    client.send(usuario.encode('utf-8'))
-
     while should_run: 
         try:
-            user_input = input("") 
+            user_input = input("--: ") 
             if not should_run: # Si el estado cambió mientras esperábamos input
                 break
 
@@ -70,6 +66,15 @@ def send():
             else:
                 message_to_send = user_input
             
+            #Si el usuario elije 1, ingresa su nickname y lo envia al servidor
+            if message_to_send == '1':
+                #usuario = input("Ingresa tu nickname: ")
+                client.send(usuario.encode('utf-8'))
+            
+            #El cliente envia la opcion 4 para que el servidor elija la opcion
+            if message_to_send == '4':
+                client.send(message_to_send.encode('utf-8'))
+
             # Si el usuario eligió '5', enviarlo y luego esperar la desconexión
             if message_to_send == '5':
                 client.send(message_to_send.encode('utf-8'))

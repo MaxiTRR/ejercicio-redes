@@ -12,6 +12,7 @@ server.listen() #Se pone al servidor en modo escucha
 clients = [] #Aca se almacenan cada objeto de socket de los clientes que se conecten
 usuarios = [] #Aca se almacenan los nombres de los usuarios que se conecte (o sea, de los clientes)
 menu = "Ingrese algunas de las opciones:\n 1-Login\n 2-Send\n 3-sendall\n 4-show\n 5-exit"
+count_client = 0 #Variable para inicializar el contador de clientes que se conectan
 
 #Funcion que envia cada mensaje a todos los clientes (usuarios conectados). Recorre la lista de clients y les envia un mensaje a cada uno.
 def broadcast(message):
@@ -29,8 +30,15 @@ def handle_client(client):
             msg_decoded = msg.decode('utf-8').strip()
 
             if msg_decoded == '1':
-                response = 'Eligio Login'
-                client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
+                # Solicitar nickname al cliente
+                client.send("Usuario: ".encode('utf-8')) #Cuando el cliente se conecta, el servidor le envia al cliente este mensjae solicitnado el nombre de Usuario. En ese momento, el clinete ingresa su nickname y lo envia al servidor.
+                usuario = client.recv(1024).decode('utf-8') #Aca recibe la respuesta del cliente.
+                usuarios.append(usuario)
+                clients.append(client)
+                
+                print(f"Usuario: {usuario}")
+                broadcast(f"{usuario} se unió al chat!".encode('utf-8')) #Le envia un mensaje a todos los clinetes
+                client.send("Conectado al servidor.".encode('utf-8')) #Aca, se lo envia al cliente particular que inicio esta conexion
             elif msg_decoded == '2':
                 response = 'Eligio Send'
                 client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
@@ -38,7 +46,9 @@ def handle_client(client):
                 response = 'Eligio Sendall'
                 client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
             elif msg_decoded == '4':
-                response = 'Eligio Show'
+                for client in clients:
+                    count_client=+1
+                response = f"Clientes conectados al chat:{str(count_client)}"
                 client.send(response.encode('utf-8')) # <-- Aquí se envía la respuesta al cliente
             elif msg_decoded == '5':
                 response = 'Eligio Exit'
@@ -83,16 +93,6 @@ def receive():
     while True:
         client, address = server.accept() #Cuando un cliente se conecta al socket del servidor, client devuelve la conexion con ese cliente y adress una tupla que contiene la ip y el puerto del cliente.
         print(f"Conectado con {str(address)}")
-
-        # Solicitar nickname al cliente
-        client.send("Usuario: ".encode('utf-8')) #Cuando el cliente se conecta, el servidor le envia al cliente este mensjae solicitnado el nombre de Usuario. En ese momento, el clinete ingresa su nickname y lo envia al servidor.
-        usuario = client.recv(1024).decode('utf-8') #Aca recibe la respuesta del cliente.
-        usuarios.append(usuario)
-        clients.append(client)
-
-        print(f"Usuario: {usuario}")
-        broadcast(f"{usuario} se unió al chat!".encode('utf-8')) #Le envia un mensaje a todos los clinetes
-        client.send("Conectado al servidor.".encode('utf-8')) #Aca, se lo envia al cliente particular que inicio esta conexion
         client.send(menu.encode('utf-8'))
         
         # Iniciar un hilo para manejar al cliente
