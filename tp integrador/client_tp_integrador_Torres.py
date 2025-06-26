@@ -42,8 +42,13 @@ def receive():
 
             #Si el cliente le envio previamente al servidor la opcion 1, este deberia constestar con un mensaje solicitando al usuario. De ser asi, el cliente escribe su usuario.
             if message.startswith("Usuario: "):
-                usuario = input("Ingresa tu usuario: ")
-                print(f"El usuario ingresado fue: {usuario}")
+                #Preguntamos por el usuario
+                temp_usuario = input("Ingresa tu usuario: ")
+                #Enviamos el usuario al servidor
+                client.send(temp_usuario.encode('utf-8'))
+                print(f"El usuario ingresado fue: {temp_usuario}")
+                #Actualizamos la variable global de usuario
+                usuario = temp_usuario
             elif message == 'Se cerrara la conexion':
                 print(message)
                 print("Desconectando del servidor...")
