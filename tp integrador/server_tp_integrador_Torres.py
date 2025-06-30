@@ -1,6 +1,7 @@
 import socket
 import threading
 import requests
+from db_setup import connect_db
 
 #Parametros asignadas para que el servidor pueda crear el socket
 HOST = '127.0.0.1'
@@ -95,14 +96,26 @@ def handle_client(client, address):
                     if response_repo.status_code == 200:
                         #Convertimos la respuesta json de la api.
                         repositories = response_repo.json()
+                        #Nos conectamos a la base de datos
+                        conn = connect_db()
                         #Verificamos que la variable haya obtenido algun valor (que existan repositorios en el usuario)
                         if repositories:
                             response_str = "Repositorios de " + current_user + ":\n"
                             #Recorremos los repositorios traidos por la consulta y mostramos solo los primeros 5
                             for repo in repositories[:5]: 
                                 response_str += f'- {repo['name']} ({repo['html_url']})\n'
+                                #Creamos un cursor para poder trabajar en la base de datos
+                                cursor = conn.cursor()
+                                #Creamos la query para poder insertar datos dentro de la tabal repositorios
+                                query=f"INSERT INTO repositorios (name, html_url) VALUES('{repo['name']}','{repo['html_url']}')"
+                                #Ejeutamos la query
+                                cursor.execute(query)
+                                #Confirmamos la query
+                                conn.commit()
+                                print("Datos grabados en la base de datos")
                             #Le enviamos al cliente un mensaje mostrando los primeros 5 repositorios encontrados
                             client.send((response_str + f"\n{menu}").encode('utf-8'))
+                            conn = connect_db()
                         #Si no se encontraron repositorios, se lo indicamos al cliente
                         else:
                             client.send(f"No se encontraron repositorios para el usuario '{current_user}'.\n{menu}".encode('utf-8'))
@@ -122,12 +135,18 @@ def handle_client(client, address):
                     response_followers = requests.get(url_followers, params=params)
 
                     if response_followers.status_code == 200:
+                        conn = connect_db()
                         followers = response_followers.json()
                         if followers:
                             response_str = "Seguidores de " + current_user + ":\n"
                             for follower in followers[:5]: # Mostrar solo los primeros 5
                                 response_str += f'- {follower['login']} ({follower['html_url']})\n'
+                                cursor = conn.cursor()
+                                query=f"INSERT INTO followers (login, html_url) VALUES('{follower['login']}','{follower['html_url']}')"
+                                cursor.execute(query)
+                                conn.commit()
                             client.send((response_str + f"\n{menu}").encode('utf-8'))
+
                         else:
                             client.send(f"No se encontraron seguidores para el usuario '{current_user}'.\n{menu}".encode('utf-8'))
                     else:
