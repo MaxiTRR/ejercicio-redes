@@ -1,12 +1,14 @@
+# Trabajos paracticos de Programacion sobre Redes IFTS 2025
+
+## Carpetas
 En las carpetas ejer.mysql connector, se encuenta el script del ejercicio para conectarse a una base de datos mysql y leer algun registro (debe haber una base de datos creada previamente en utilizando algun servicio como xampp)
 <br>
 <br>
-En la carpeta github_api_ejer, se encuentra el ejercico para acceder a la api de github, obtener los repositorios y los followers e insertarlos en una base de datos (debe haber una base de datos creada previamente en utilizando algun servicio como xampp)
+En la carpeta github_api_ejer, se encuentra el ejercico para acceder a la api de github, obtener los repositorios y los followers e insertarlos en una base de datos (debe haber una base de datos creada previamente en utilizando algun servicio como xampp, se adjunta el schema para poder importarlo directamente)
 <br>
 <br>
-La car[eta tests tiene algunos scripts para testeos de codigo y funciones
-<br>
-<br>]
+
+# Tp Integrador
 Estado actual (ejercicio client_torres y server_torres)
 <br>  
 #El cliente y el server se ejecutan e inician correctamente.
